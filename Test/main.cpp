@@ -76,8 +76,6 @@ using namespace std;
 //     Picture p;
 // }
 
-class Picture;
-
 class Circle
 {
     public:
@@ -93,6 +91,14 @@ class Circle
         double centerX() const
         {
             return m_x;
+        }
+        double centerY() const
+        {
+            return m_y;
+        }
+        double centerR() const
+        {
+            return m_radius;
         }
     private:
         Picture* m_picture;
@@ -114,12 +120,27 @@ class Picture
         int m_nCircles;
 };
 
-Picture::Picture(const Picture& other)
-    : m_nCircles(other.m_nCircles)
+Picture::~Picture()
 {
-    for(int i = 0; i < m_nCircles; i++)
+    for(int i = 0; i <m_nCircles; i++)
     {
-        m_Circles[i] = other.m_Circles[i];
-        m_Circles[i]->setPicture(this);
+        delete m_Circles[i];
     }
+    delete [] m_Circles;
+}
+
+// Picture::Picture(const Picture& other)
+//     : m_nCircles(other.m_nCircles)
+// {
+//     Circle* m_Circles[100];
+//     for(int i = 0; i < m_nCircles; i++)
+//     {
+//         m_Circles[i] = new Circle(this, other.m_Circles[i]->centerX(), other.m_Circles[i]->centerY(), other.m_Circles[i]->centerR());
+//         m_Circles[i]->setPicture(this);
+//     }
+// }
+
+int main()
+{
+    Picture pic;
 }

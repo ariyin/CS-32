@@ -8,6 +8,10 @@
 - [Review](#review)
 - [Lecture 1-2](#lecture-1-2)
 - [Lecture 3-4](#lecture-3-4)
+- [Lecture 5](#lecture-5)
+- [Lecture 6](#lecture-6)
+- [Lecture 7-8](#lecture-7-8)
+- [Lecture 9-10](#lecture-9-10)
 
 ## Review
 - `double&& x` -> reference variable
@@ -786,3 +790,257 @@ Tips for linked lists:
     - Back
     - Empty
     - One-element list
+
+## Lecture 6
+
+**Recording:**
+- [Lecture 6](https://bruinlearn.ucla.edu/courses/160766/pages/6-monday-april-17-lecture-stacks-and-queues?module_item_id=5973609)
+
+**Stack**
+- Cafeteria tray analogy
+- Use if the only time you're adding/removing from the end
+- Limits possibilities, easier to read the program
+- In an array, top is the space after the last valid input
+- In a linked list, top is the head (do operations at the front)
+- Operations:
+    - Required:
+        - Create an empty stack
+        - Push an item onto the stack (insert)
+        - Pop an item from the stack (remove)
+        - Look at the top item on the stack
+    - Optional:
+        - Look at any item in the stack
+        - How many items are in the stack
+- Examples:
+    - Solving calculator equations:
+        - Push operand onto the stack
+        - Pop top two operands off the stack
+        - Apply operator
+        - Push the result onto the stack
+    - Convert infix to postfix:
+        - (if) If the current item is an operand, append it to the result sequence
+        - (else if) If the current item is (, push it onto the stack
+        - (else if) If the current item is ), pop operators off the stack, appending them to the result sequence, until you pop an (, which you do not append to the sequence
+        - (else) If the current item is an operator:
+            - (if) If the operator stack is empty, push the current operator onto the stack
+            - (else if) If the top of the stack is (, push the current operator onto the stack
+            - (else if) If the current operator has precendence greater than that of the operator at the top of the stack, push the current operator onto the stack
+            - (else) Pop the top operator from the stack and append it to the result sequence
+                - Check again
+        - At the end of the input sequence, pop each operator off the stack and append it to the result sequence 
+
+```git
+#include <stack>
+using namespace std;
+
+stack<int> s;
+s.push(10); 
+s.push(20); // 10 20
+cout << s.top() << endl; // 20
+s.pop();
+if(s.empty())
+    cout << "Stack is empty!" << endl;
+else
+    cout << s.top() << endl; // writes 10
+ out << s.size() << endl; // writes 1
+```
+
+**Queue**
+- Line analogy
+- Inserted at one end, removed from the other end
+- Head/tail or front/back
+- For an array, treat it like a "ring buffer" or "circular array"
+    - If head = tail, queue is either empty or full
+    - Need a size variable
+- Operations:
+    - Required:
+        - Create an empty queue
+        - Enqueue an item (insert)
+        - Dequeue an item (remove)
+        - Look at the front item in the queue
+        - Is the queue empty
+    - Optional:
+        - Look at the back item in the queue
+        - Look at any item in the queue
+        - How many items are in the queue
+
+```git
+#include <queue>
+using namespace std;
+
+queue<int> q;
+q.push(10);
+q.push(20); // 10 20
+cout << q.front() << endl; // 10
+q.pop();
+if(q.empty())
+    cout << "Queue is empty! << endl;
+else
+    cout << q.front() << endl; // writes 20
+cout << q.size() << endl; // writes 1 
+cout << q.back() << endl;  // writes 20
+```
+
+## Lecture 7-8
+
+**Recording:**
+- [Lecture 7](https://bruinlearn.ucla.edu/courses/160766/pages/7-wednesday-april-19-lecture-inheritance?module_item_id=5973606)
+- [Lecture 8](https://bruinlearn.ucla.edu/courses/160766/pages/8-monday-april-24-inheritance-and-polymorphism?module_item_id=5973603)
+
+**Inheritance & Polymorphism**
+- The derived class inherits all the properties of the base class
+- Static binding: at compile time; default
+- Dynamic binding: at run time; `virtual`
+- Never attempt to override a non-virtual function
+- If the base class version is
+    - Likely to be overwritten in at least one derived class, then make it virtual
+    - Never going to be overwritten in any derived class, you have the option of making it virtual, but you don't have to make it virtual
+- How virtual functions and implemented (pointers and shit)
+    - Virtual table
+    - First 30 minutes of Lecture 7
+- Shape is an abstract base class (ABC)
+    - Cannot create something that is just a shape and nothing more
+- If a class has at least one pure virtual function, it's an abstract class
+    - An abstract class cannot be instantiated, you cannot create an object that is of just that type
+- If a class is designed to be a base class, declare a destructor for it, and make it virtual
+- First step of a constructor: construct the base part
+- Last step of a destructor: destroy the base part
+
+```git
+class Shape // base class
+{
+  public:
+    Shape(double x, double y);
+    void move(double xnew, double ynew);
+    virtual void draw() const = 0; // "pure virtual function"; no general method
+    virtual ~Shape();
+    double x() const;
+    double y() const;
+    ...
+  private:
+    double m_x;
+    double m_y;
+};
+
+class Circle : public Shape // derived class; a circle is a kind of shape
+{
+  public:
+    Circle(double r, double x, double y);
+    virtual void draw() const;
+    ...
+  private:
+    double m_r;
+};
+
+class Rectangle : public Shape
+{
+  public:
+    Rectangle(double x, double y, double dx, double dy);
+    virtual void draw() const;
+    virtual double diag() const;
+    ...
+  private:
+    double m_dx;
+    double m_dy;
+};
+
+Shape::Shape(double x, double y)
+ : m_x(x), m_y(y)
+{}
+
+void Shape::move(double xnew, double ynew)
+{
+    m_x = xnew;
+    m_y = ynew;
+}
+
+Shape::~Shape()
+{}
+
+double Shape::x() const
+{
+    return m_x;
+}
+
+double Shape::y() const
+{
+    return m_y;
+}
+
+Circle::Circle(double r, double x, double y)
+ : Shape(x, y), m_r(r) // if not listed, will call default constructor for shape -> if doesn't exist, error
+{
+    if (r < 0)
+        ... error: radius must be non-negative ...
+}
+
+void Circle::draw() const
+{
+  ... draw a circle of radius m_r centered at (x(), y()) ...
+}
+
+Rectangle::Rectangle(double x, double y, double dx, double dy)
+ : Shape(x, y), m_dx(dx), m_dy(dy)
+{}
+
+void Rectangle::draw() const
+{
+  ... draw a line from (x(), y()) to (x()+m_dx, y()) ...
+  ... draw a line from (x()+m_dx, y()) to (x()+m_dx, y()+m_dy) ...
+  ... draw a line from (x()+m_dx, y()+m_dy) to (x(), y()+m_dy) ...
+  ... draw a line from (x(), y()+m_dy) to (x(), y()) ...
+}
+
+double Rectangle::diag() const
+{
+    return std::sqrt(m_dx*m_dx + m_dy*m_dy);
+}
+```
+
+```git
+class Shape
+{
+    virtual ~Shape();
+    virtual void draw() const = 0;
+    ...
+};
+
+Shape::~Shape()
+{}
+
+class Polygon : public Shape
+{
+    virtual ~Polygon();
+    Node* head;
+};
+```
+
+## Lecture 9-10
+**Recording:**
+- [Lecture 9](https://bruinlearn.ucla.edu/courses/160766/pages/9-wednesday-april-26-recursion?module_item_id=5973600)
+- [Lecture 10](https://bruinlearn.ucla.edu/courses/160766/pages/10-monday-may-1-recursion-templates-up-to-54-35-is-what-you-need-for-homework-3?module_item_id=5973597)
+
+**Recursion**
+- Sort a pile of n items:
+    - if (n >= 2)
+    - Split the pile into two unsorted piles of about n/2 items
+    - Sort the left subpile
+    - Sort the right subpile
+    - Merge the two sorted subpiles into one sorted pile
+- Recursive function
+    - Base case(s): path(s) through the function that do not make a recursive call
+    - Recursive case(s): path(s) through the function that make a recursive call
+- Every recursive call is to solve a strictly "smaller" problem ("closer" to base case)
+
+```git
+void sort(int a[], int b, int e)
+{
+    if (e - b >= 2)
+    {
+        int mid = (b + e) / 2;
+        sort(a, b, mid);
+        sort(a, mid, e);
+        merge(a, b, mid, e);
+    }
+}
+```
