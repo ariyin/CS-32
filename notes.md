@@ -11,7 +11,7 @@
 - [Lecture 5](#lecture-5)
 - [Lecture 6](#lecture-6)
 - [Lecture 7-8](#lecture-7-8)
-- [Lecture 9-10](#lecture-9-10)
+- [Lecture 9-11](#lecture-9-11)
 
 ## Review
 - `double&& x` -> reference variable
@@ -887,24 +887,77 @@ cout << q.back() << endl;  // writes 20
 - [Lecture 7](https://bruinlearn.ucla.edu/courses/160766/pages/7-wednesday-april-19-lecture-inheritance?module_item_id=5973606)
 - [Lecture 8](https://bruinlearn.ucla.edu/courses/160766/pages/8-monday-april-24-inheritance-and-polymorphism?module_item_id=5973603)
 
-**Inheritance & Polymorphism**
+**Inheritance**
 - The derived class inherits all the properties of the base class
 - Static binding: at compile time; default
 - Dynamic binding: at run time; `virtual`
 - Never attempt to override a non-virtual function
+    - If you want to override or specialize existing functions from the base class in your derived class, you should always insert the `virtual` keyword in front of both the original and replacement functions
+    - If you define your member functions outside your class, you must only use the `virtual` keyword within your class definition
+        - Ex: `void Student::WhatDoISay()` (no virtual in front even though in the class it would be `virtual void WhatDoISay();`)
 - If the base class version is
     - Likely to be overwritten in at least one derived class, then make it virtual
     - Never going to be overwritten in any derived class, you have the option of making it virtual, but you don't have to make it virtual
-- How virtual functions and implemented (pointers and shit)
-    - Virtual table
-    - First 30 minutes of Lecture 7
+- If you would like your derived class to be able to reuse one or more private member functions of the base class but you don't want the rest of your program (outside your class) to use them, then make them protected instead of private in the base class
+    - This lets your derived class (and its derived classes) reuse the member functions from the base class but still prevents the rest of your program from seeing/using them
+- But never make your member variables protected or public
+    - If you expose member variables to a derived class, you violate encapsulation
+- Your derived class will by default always use the most derived version that it knows of a specialized method
+    - Ex: If Student and NerdyStudent both have a cheer() function, and NerdyStudent's getExcitedAboutCS() calls Student::cheer(), the cheer() that gets called is NerdyStudent's cheer
+    - If you want to call the base class's version of a method that's been redefined in the derived class, you can do so by using `baseclass::method()` or `Student::cheer()`
+- If a superclass requires parameters for construction, then you must add an initializer to the subclass constructor
+    - The first item in your initializer list must be the name of the base class, along with parameters in parentheses
+    - Ex: Duck() : Animal(2) { m_feathers = 99; }
+- What happens if I assign one instance of a derived class to another?
+    - It works fine; C++ first copies the base data from y to x, and then copies the derived data from y to x
+    - However, if your base and derived classes have dynamically allocated member variables (or would otherwise need a special copy constructor/assignment operator), then you must define assignment operators and copy constructors for the base class and also the special versions of these functions for the derived class
 - Shape is an abstract base class (ABC)
     - Cannot create something that is just a shape and nothing more
 - If a class has at least one pure virtual function, it's an abstract class
     - An abstract class cannot be instantiated, you cannot create an object that is of just that type
+- If you define an abstract base class, its derived class
+    - Must either provide code for all pure virtual functions
+    - Or the derived class becomes an abstract base class
 - If a class is designed to be a base class, declare a destructor for it, and make it virtual
 - First step of a constructor: construct the base part
 - Last step of a destructor: destroy the base part
+
+**Polymorphism**
+- Once you define a function that accepts a reference or pointer to a Person, not only can you pass Person variables to that class, but you can also pass any variable that was derived from a Person
+- Any time you use a base pointer or a base reference to access a derived object, that is called polymorphism 
+- Only works when you use a reference or a pointer to pass an object
+    - Otherwise "chopping happens"
+    - C++ will chop off all the data/methods of the derived class and only send the base parts of the variable to the function
+- If you pass in a reference/pointer to a method with the base class, the method thinks that every variable you pass in is jus the base class
+    - This means that it only knows about the functions found in the base class
+    - Functions specific to derived classes are totally invisible to it
+- When should you use the virtual keyword?
+    - Use the virtual keyword in your base class any time you expect to redefine a function in a derived class
+    - Use the virtual keyword in your derived classes any time you redefine a function (for clarity, not required)
+    - Always use the virtual keyword for the destructor in your base class (and in your derived classes for clarity)
+    - You can't have a virtual constructor, so don't try
+        - The constructor is always called at class creation, and there you always know what type the class is, so virtual doesn't make any sense
+        - Constructors are class local, so you can't override the constructor of the parent class
+- In general, you may point a superclass pointer at a subclassed variable
+    - But you may never point a subclass pointer at a superclass variable
+    - Like a square is a rectangle but a rectangle is not a square
+        - Shape *ptr;
+        - ptr = &sq;
+        - ptr->getArea();
+- You should always make sure that you use virtual destructors when you use inheritance/polymorphism
+    - You don't need to make the derived class destructor virtual so long as the destructor in your base class is virtual
+    - The derived class's virtual destructor will automatically become virtual if the base destructor is
+    - If you forget a virtual destructor, it only causes problems when you use polymorphism
+- Cheat sheet
+    - You can't access private members of the base class from the derived class
+    - Always make sure to add a virtual destructor to your base class
+    - Don't forget to use virtual to define methods in your base class, if you expect to redefine them in your derived class(es)
+    - To call a base class method that has been redefined in a derived class, use the base:: prefix
+    - So long as you define your base version of a function with virtual, all derived versions of the function will automatically be virtual too (even without the virtual keyword)
+    - When you use a base pointer to access a derived object
+        - And you call a virtual function defined in both the base and the derived classes, your code will call the derived version of the function
+        - And you call a non-virtual function defined in both the base and the derived classes, your code will call the base version of the function
+        - All function calls to virtual functions will be directed to the derived object's version, even if the function calling the virtual function is not virtual itself
 
 ```git
 class Shape // base class
@@ -1015,10 +1068,11 @@ class Polygon : public Shape
 };
 ```
 
-## Lecture 9-10
+## Lecture 9-11
 **Recording:**
 - [Lecture 9](https://bruinlearn.ucla.edu/courses/160766/pages/9-wednesday-april-26-recursion?module_item_id=5973600)
 - [Lecture 10](https://bruinlearn.ucla.edu/courses/160766/pages/10-monday-may-1-recursion-templates-up-to-54-35-is-what-you-need-for-homework-3?module_item_id=5973597)
+- [Lecture 11](https://bruinlearn.ucla.edu/courses/160766/pages/11-wednesday-may-3-templates-stl?module_item_id=5973594)
 
 **Recursion**
 - Sort a pile of n items:
@@ -1031,6 +1085,17 @@ class Polygon : public Shape
     - Base case(s): path(s) through the function that do not make a recursive call
     - Recursive case(s): path(s) through the function that make a recursive call
 - Every recursive call is to solve a strictly "smaller" problem ("closer" to base case)
+- Recursive functions should never use global, static, or member variables; they should only use local variables and parameters
+- Writing recursive functions
+    - Write the function header
+    - Define your magic function
+    - Add your base case code
+    - Solve the problem with the magic function
+    - Remove the magic
+    - Validate your function
+- When writing recursive functions with linked lists:
+    - Your recursive function should generally only access the current node/array cell passed into it
+    - Your recursive function should rarely/never access the value(s) in the node(s)/cell(s) below it
 
 ```git
 void sort(int a[], int b, int e)
@@ -1044,3 +1109,202 @@ void sort(int a[], int b, int e)
     }
 }
 ```
+
+```git
+bool has(int a[], int n, int target)
+{
+    if (n <= 0)
+        return false;
+    if (a[0] == target)
+        return true;
+    return has(a+1, n-1, target);
+}
+```
+
+```git
+bool solve(start, end)
+{
+    if (start == end)
+        return true;
+    mark start as visited
+    for each direction
+    {
+        if (moving in that direction is possible, and that sport has not been visited)
+            if (solve(position reached by moving that step, end))
+                return true
+    }
+    return false
+}
+```
+
+**Templates**
+
+```git
+int minimum(int a, int b)
+{
+    if(a < b)
+        return a;
+    else
+        return b;
+}
+
+double minimum(double a, double b)
+{
+    if(a < b)
+        return a;
+    else
+        return b;
+}
+
+int main()
+{
+    int k;
+    cin >> k;
+    cout << minimum(k, 10) / 2;
+    double x;
+    ...
+    double y = 3 * minimum(x*x, x+10);
+    ...
+    int z = minimum(0, 3*k - k + 4);
+    ...
+}
+```
+
+```git
+template<typename T>
+T minimum(const T& a, const T& b) // pass by reference for things expensive to copy
+{
+    if(a < b)
+        return a;
+    else
+        return b;
+}
+```
+
+- For a successful call to the template function (template argument deduction):
+    - The call must match some template
+    - The instantiated template must compile
+    - The instantiated template must do what you want
+- For matching, the only conversions considered for any type A are
+    - A -> A&
+    - A -> const A
+    - Array of A -> A*
+
+```git
+template<typename T>
+T sum(const T a[], int n)
+{
+    T total = T(); // double() or string()
+    for(int k = 0; k < n; k++>)
+        total += a[k];
+    return total;
+}
+```
+
+```git
+template<typename T>
+class Stack
+{
+    public:
+        Stack();
+        void push(const T& x);
+        void pop();
+        T top() const;
+        int size() const;
+    private:
+        int m_data[100];
+        int m_top;
+};
+
+template<typename T>
+Stack<T>::Stack()
+    : m_top(0)
+{}
+
+template<typename T>
+void Stack<T>::push(const T& x)
+{
+    m_data[m_top] = ; // undefined if full
+    m_top++;
+}
+
+template<typename T>
+void Stack<T>::pop()
+{
+    m_top--;
+}
+
+template<typename T>
+T Stack<T>::top() const
+{
+    return m_data[m_top-1];
+}
+
+template<typename T>
+int Stack<T>::size() const
+{
+    return m_top;
+}
+```
+
+- Always place your templated functions in a header file
+    - You must put the entire template function body in the header file, not just the prototype, or you'll get an error
+- Each time you use a template function with a different type of variable, the compiler generates a new version of the function in your program to handle that type of variable
+- You must use the template data type to define the type of at least one formal parameter, or you'll get an error
+- If a function has two or more "templated parameters," with the same type you must pass in the same type of variable/value for both
+- If your templated function uses a comparison operator on templated variables then C++ expects that all variables passed in will have that operator defined
+- To make an entire class generic, you must use the prefix `template <typename xxx>` before the class definition itself
+    - Then update the appropriate types in your class
+    - Ex: void setVal(Item a), Item m_a
+- In classes with externally-defined member functions:
+    - You add the prefix `template <typename xxx>` before the class definition itself and before each function definition outside the class
+    - Update the types to use your templated type
+    - Place the postfix `<xxx>` between the clsas name and the :: in all function definitions 
+    - Ex: template <typename Item>
+    - void Foo<Item>::setVal(Item a)
+
+
+**STL**
+- A collection of pre-written, tested classes provided by the authors of C++
+- All built using templates, meaning they can be used with many different data types
+- Vector
+    - #include <vector>
+    - vector<string> strs;
+- Lists
+    - push_back (add back)
+    - pop_back (remove back)
+    - push_front (add front)
+    - pop_front (remove front)
+    - front
+    - back
+    - size
+    - empty
+- Vectors vs Lists
+    - Since vectors are based on dynamic arrays, they allow fast access to any element (via brackets) but adding new items is often slower
+    - The STL list is based on a linked list, so it offers fast insertion/deletion, but slow access to middle elements
+- Map
+- Set
+
+**Iterators**
+- Last half of Lecture 11
+- To enumerate the contents of a container, you typically use an iterator variable
+- An iterator variable is just like a pointer variable, but it's used just with STL containers
+- Typically, you start by pointing an iterator to some item in your container (e.g., the first item)
+- Just like a pointer, you can incremenet and decrement an iterator to move it up/down through a container's items
+- You can also use the iterator to read/write each value it points to
+- To define an iterator variable, write the container type followed by two colons, followed by the word iterator and then a variable name
+    - Ex: vector<string>::iterator it;
+- To point your iterator at the first item, simply use the container's begin() method
+    - it = myVec.begin();
+- Once the iterator points at a value, you can use the * operator with it to access the value
+    - Operator overloading
+    - cout << (*it);
+- You can move your iterator down one item by using the ++ operator
+    - Same logic for --
+- Each container has an end() method, but it doesn't point to the last item; it points just past the last item in the container
+    - So if you want to get the last item, you've got to first point it at end() and then decremenet it
+- it->beNerdy();
+- Sometimes you'll pass a container as a const reference parameter
+    - void tickleNerds(const list<string> &nerds)
+    - To iterate through such a container, you can't use the regular iterator
+    - Use a const iterator: list<string>::const_iterator it;
