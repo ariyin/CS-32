@@ -1583,7 +1583,7 @@ struct BUCKET
     - Time complexity: O(NlogN)
 
 ## Final Review
-- Converting infix to postfix: 
+- Converting infix to postfix: (nice doing output horizontally, stack vertically)
     1. Create an empty stack and an empty output string.
     2. Start scanning the infix expression from left to right.
     3. If the scanned character is an operand, append it to the output string.
@@ -1599,7 +1599,7 @@ struct BUCKET
     7. Repeat steps 3 to 6 until all characters are scanned.
     8. Pop any remaining operators from the stack and append them to the output string.
     9. The output string is the postfix expression.
-- Converting postfix to infix:
+- Converting postfix to infix: (nice working vertically)
     1. Start reading the postfix expression from left to right.
     2. Initialize an empty stack to store the intermediate results.
     3. For each character in the postfix expression:
@@ -1609,6 +1609,13 @@ struct BUCKET
         - Push the newly constructed infix expression back onto the stack.
     4. Repeat steps 3 for all characters in the postfix expression until you reach the end.
     5. At the end, the stack will contain the final infix expression.
+- Converting infix to prefix:
+    1. Start reading the infix expression from right to left.
+    2. Same steps as converting infix to postfix.
+    3. Finally, reverse the output to obtain the prefix expression.
+- Converting prefix to infix: 
+    1. Scan the prefix expression from right to left.
+    2. Same steps as converting postfix to infix
 - Evaluate a prefix expression:
     1. Start scanning the expression from right to left.
     2. If the current token is an operand (a number), push it onto the stack.
@@ -1621,6 +1628,15 @@ struct BUCKET
     - Preorder: root, left, right
     - Postorder: left, right, root
     - Inorder: left, root, right
+- To find the pivots in a quicksort algorithm, see if at a certain index the other items to the left and right are in the right place (less than or greater than); order does not matter as long as the items are on the right side
+- Sort using heapsort:
+    - Create a tree 
+    - Delete the largest item (at the root of the tree)
+        - Follow the deletion rules (swap with the bottom rightmost item, trickle down)
+    - Move the item to the back of the array
+    - Promote the next largest item to be the root
+    - Reconfigure the tree (make sure it's still a max heap)
+    - Repeat
 - Binary tree balancing: 
 ```git
 bool isLeaf(Node* node)
@@ -1669,6 +1685,8 @@ void HashTable::setNumberOfBuckets(unsigned int newNumberOfBuckets)
     m_buckets = newBuckets;
 }
 ```
+- In general, hash_map has better time efficiency, but if you need something to be sorted, BST_map is better
+- e1: B, e2: E, e3: A
 - When deleting a node in BST, and the node's children has multiple children (granchildren), choose either the rightmost node of the left branch of the leftmost node of the right branch
 - Time complexity practice:
     - Note: A pair<T1, T2> is a simple struct with two data members, one of type T1 and one of type T2. A set<K> and a map<K, V> are organized as approximately balanced binary search trees; an unordered_set<K> and an unordered_map<K, V> are organized as hash tables that never allow the load factor to exceed some constant, and a loop that visits every item in a hash table of N items is O(N). For the keys to be hashed, the hash function used produces uniformly distributed results.
