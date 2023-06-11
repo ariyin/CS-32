@@ -12,6 +12,10 @@
 - [Lecture 6](#lecture-6)
 - [Lecture 7-8](#lecture-7-8)
 - [Lecture 9-11](#lecture-9-11)
+- [Lecture 12-15](#lecture-12-15)
+- [Lecture 16-17](#lecture-16-17)
+- [Lecture 18](#lecture-18)
+- [Final Review](#final-review)
 
 ## Review
 - `double&& x` -> reference variable
@@ -1308,3 +1312,380 @@ int Stack<T>::size() const
     - void tickleNerds(const list<string> &nerds)
     - To iterate through such a container, you can't use the regular iterator
     - Use a const iterator: list<string>::const_iterator it;
+
+## Lecture 12-15
+**Recordings:**
+- [Lecture 12](https://bruinlearn.ucla.edu/courses/160766/pages/12-monday-may-8-stl-algorithm-analysis?module_item_id=5973591)
+- [Lecture 13](https://bruinlearn.ucla.edu/courses/160766/pages/13-wednesday-may-10-sorting?module_item_id=5973590)
+- [Lecture 14](https://bruinlearn.ucla.edu/courses/160766/pages/14-monday-may-15-sorting-trees?module_item_id=5973587)
+- [Lecture 15](https://bruinlearn.ucla.edu/courses/160766/pages/15-wednesday-may-17-trees?module_item_id=5973584)
+
+**Algorithm Analysis**
+- The Big-O approach measures an algorithm by the gross number of steps that it requires to process an input of size N in the worst case scenario
+- Ignore the coefficients and lower-order terms of the expression
+- If a loop doesn't run for a fixed number of iterations, turn them into loops with a fixed number of iterations using their maximum possible iteration count
+- A function f(N) is O(g(N)) if there exist N_0 and k such that for all N >= N_0, |f(N)| <= k*g(N)
+- f(N) is "order g(N)"
+- 2(N^2) + 1000(N) + 1000 is O(N^2)
+
+```git
+for(int i = 0; i < N; i++) // N * O(1) -> O(N) 
+    c[i] = a[i] * b[i]; // O(1)
+
+for(int i = 0; i < N; i++) // N*O(N) -> O(N^2)
+{ // O(1) + O(N) -> O(1+N) -> O(N)
+    a[i] *= 2; // O(1)
+    for(int j = 0; j < N; j++) // O(N)
+        d[i][j] = a[i] * c[j]; // O(1)
+}
+
+for(int i = 0; i < N; i++) // N*O(1) -> O(N)
+{ // O(1)
+    a[i] *= 2; // O(1)
+    for(int j = 0; j < 100; j++) // 100*O(1) -> O(100) -> O(1)
+        d[i][j] = a[i] * c[j]; // O(1)
+}
+
+for(int i = 0; i < N; i++) //  O(0+1+2+3+...+(N-1)) -> O(N^2)
+{ // O(i)
+    a[i] *= 2; // O(1)
+    for(int j = 0; j < i; j++) // i*O(1) = O(i)
+        d[i][j] = a[i] * c[j]; // O(1)
+}
+
+0+1+2+3+...+(N-1)*N/2 = (.5N^2 - .5N) = O(N^2)
+
+for(int i = 0; i < N; i++) // O(N^2)
+{ // O(N)
+    if(find(a, a+N, 10*i) != a+N) // O(N)
+        count++; // O(1)
+}
+
+for(int i = 0; i < N; i++) // O(N^2 log N)
+{ // O(N log N)
+    a[i] *= 2; // O(1)
+    for(int j = 0; j < N; j++) // O(N log N)
+        d[i][j] = f(a, N); // O(log N)
+}
+
+Suppose f(a, N) takes O(log N) time
+
+for(int i = 0; i < R; i++) // O(RC log C)
+{ // O(C log C)
+    a[i] *= 2; // O(1)
+    for(int j = 0; j < C; j++) / O(C log C)
+        ...g(... C ...)...; // O(log C)
+}
+
+Suppose g(... X ...) takes O(log X) time
+```
+
+**Sorting**
+- Selection Sort
+    - Look at all N books, select the shortest book
+    - Swap this with the first book
+    - Look at the remaining N-1 books, and select the shortest
+    - Swap this book with the second book
+    - Look at the remaining N-2 books, and select the shortest
+    - Swap this book with the third book and so on...
+    - O(N^2)
+    - Takes just as many steps either way
+- An "unstable" sorting algorithm re-orders the items without taking into account the initial ordering
+- A "stable" sorting algorithm does take into account the initial ordering when sorting, maintaining the order of similar-valued items
+- Insertion Sort
+    - Focus on the first two books
+    - If the last book in this set is in the wrong order
+        - Remove it from the shelf
+        - Shift the book before it to the right
+        - Insert our book into the proper slot
+    - Focus on the first three books
+    - If the last book in this set is in the wrong order
+        - Remove it from the shelf
+        - Shift the books before it to the right, as necessary
+        - Insert our book into the proper slot
+    - Etc
+    - O(N^2)
+    - If all books are in the proper order, it just takes roughly ~N steps to sort the array O(N)
+- Bubble Sort
+    - Start at the top element of your array
+    - Compare the first two elements: A[0] and A[1]
+        - If they're out of order, then swap them
+    - Then advance one element in your array
+    - Compare these two elements: A[1] and A[2]
+        - If they're out of order, swap them
+    - Repeat until you hit the end of the array
+    - When you hit the end of the array, if you made at least one swap on your way down, then start back at the top and repeat the whole process again
+    - O(N^2)
+- Quicksort and mergesort are efficient "divide and conquer" sorting algorithms
+    - Divide the elements to be sorted into two gropus of roughly equal size
+    - Sort each of these smaller groups of elements using recursion
+    - Combine the two sorted groups into one large sorted group
+    - Usually require O(N*log2(N)) steps
+- Quicksort
+    - If the array contains only 0 or 1 element, return
+    - Select an arbitrary element P from the array (typically the first element in the array)
+    - Move all elements that are less than or equal to P to the left of the array and all elements greater than it to the right (partitioning)
+    - Recursively repeat this process on the left sub-array and then the right sub-array
+    - If the array is already sorted or mostly sorted or in reverse order, quicksort becomes very slow
+- Mergesort
+    - The basic merge algorithm takes two presorted arrays as inputs and outputs a combined, third sorted array
+    - If array has one element, then return
+    - Split up the array into two equal sections
+    - Recursively call mergesort function on the left half
+    - Recursively call mergesort function on the right half
+    - Merge the two halves using our merge function
+    - Works equally well regardless of the ordering of the data
+
+**Trees**
+- Trees are made of nodes
+- Every tree has a "root" pointer
+- The top node of a tree is called its "root" node
+- Every node may have zero or more "children" nodes
+- A node with 0 children is called a "leaf" node
+- A tree with no nodes is called an "empty tree"
+- Binary trees
+    - In a binary tree every node has at most two children nodes: a left child and a right child
+```git
+struct BTNODE
+{
+    string value;
+    BTNODE *pLeft, *pRight;
+}
+```
+- When we iterate through all the nodes in a tree, it's called a traversal
+- Any time we traverse through a tree, we always start with the root node
+- Each technique differs in the order that each node is visited during the traversal:
+    - Pre-order traversal
+        - Process the current node
+        - Recursively call PreOrder on the left sub-tree
+        - Recursively call PreOrder on the right sub-tree
+    - In-order traversal
+        - Recursively process nodes in the left sub-tree
+        - Process the current node
+        - Recursively process nodes in the right sub-tree
+    - Post-order traversal
+        - Recursively process nodes in the left sub-tree
+        - Recursively process nodes in the right sub-tree
+        - Process the current node
+    - Level-order traversal
+        - Visit each level's nodes, from left to right, before visiting nodes in the next level
+        - Use a temp pointer variable and a queue of node pointers
+        - Insert the root node pointer into the queue
+        - While the queue is not empty:
+            - Dequeue the top node pointer and put it in temp
+            - Process the node
+            - Add the node's children to queue if they are not null
+
+## Lecture 16-17
+**Recording:**
+- [Lecture 16](https://bruinlearn.ucla.edu/courses/160766/pages/16-monday-may-22-hash-tables?module_item_id=5973581)
+- [Lecture 17](https://bruinlearn.ucla.edu/courses/160766/pages/17-wednesday-may-24-hash-tables?module_item_id=5973578)
+
+**Hash Tables**
+- Load factor = # of items / # of buckets
+- Always expect collisions
+    - A collision is a condition where two or more values both map into the same bucket in the array
+    - This causes ambiguity because we can't tell what value was actually stored in the array
+- Hash function takes a key and produces an integer for you
+- O(N)
+
+```git
+#include <functional>
+using namespace std;
+
+string s = "hello";
+unsigned int x = std::hash<string>()(s) % numberOfBuckets;
+```
+
+```git
+#include <map>
+
+map<string, double> ious;
+
+string name;
+double amt;
+while(cin >> name >> amt)
+    ious[name] += amt;
+for(map<string, double>::iterator p = ious.begin(); p != ious.end(); p++)
+    cout << p->first << " owes me $" << p->second << endl; 
+```
+- % Rule: When you divide by a given value N, all of your remainders are guaranteed to be between 0 and N-1
+- How can we write a mapFunc that converts a large ID# into a bucket # that falls within our 100,000 element array?
+```git
+int mapFunc(int idNum)
+{
+    const int ARRAY_SIZE = 100000;
+
+    int bucket = idNum % ARRAY_SIZE;
+    return bucket;
+}
+```
+- Closed hash table with linear probing
+    - If the target bucket is empty, we can store our value there
+    - However, instead of storing true in the bucket, we store our full original value
+    - If the bucket is occupied, we scan down from that bucket until we hit the first empty bucket and put the new value there
+    - If you run into a collision on the last bucket, wrap back around the top to slot zero
+    - To search the hash table, compute a target bucket number with our mapping function
+        - We then look in that bucket for our value
+        - If we don't find our value, probe linearly down the array until we either find our value or hit an empty bucket
+        - If while probing you run into an empty bucket, it means your value isn't in the array
+        - If you go past the end of the array, wrap around back to slot zero and continue searching
+    - Only use this method when you don't intend to delete items from your hash table (dictionary)
+- Open hash table
+    - Instead of storing our values directly in the array, each array bucket points to a linked list of values
+    - To search for an item:
+        - Compute a bucket # with your mapping function: `bucket = mapFunc(idNum);`
+        - Search the linked list at array[bucket] for your item
+        - If we reach the end of the list without finding our item, it's not in the table
+    - Good if you plan to repeatedly insert and delete values into the hash table
+- Open hash tables are almost always more efficient than closed hash tables
+- Choosing a hash function:
+    - The hash function must always give us the same output value for a given input value
+    - The hash function should disperse items throughout the hash array as randomly as possible
+    - When coming up with a new hash function, always measure how well it disperses items
+
+```git
+struct BUCKET
+{
+    int idNum;
+    bool used;
+} 
+```
+
+## Lecture 18
+**Recording:**
+- [Lecture 18](https://bruinlearn.ucla.edu/courses/160766/pages/18-wednesday-may-31-heaps?module_item_id=5973575)
+
+**Heaps**
+- A complete binary tree is a binary tree that is completely filled at every level, except possibly the deepest level, which is filled from left to right
+- A (max) heap is a complete binary tree in which the value at every node is greater than the values of all the nodes in its subtrees
+- A min heap is a complete binary tree in which the value at every node is less than the values of all the nodes in its subtrees
+- Insert into a heap:
+    - Add the item as the bottom rightmost one, producing a complete binary tree
+    - Bubble up the item to its proper place
+- Remove from a heap:
+    - The root value is the item removed
+    - Promote the bottom rightmost item to be the root, producing a complete binary tree
+    - Trickle that value down to its proper place
+- Inserting and extracting from a heap is O(log2(n))
+- In an array:
+    - Node is heap[i]
+    - Parent is heap[(i-1)/2]
+- Heapsort:
+    - Given an array of N numbers that we want to sort:
+    - Convert our input array into a maxheap
+        - Create a tree
+        - Start at the last node (bottom-most, right-most node), move to the root node
+            - Swap the "root" value down with it's larger child until it's bigger than both of its children (or it hits a leaf) 
+    - While there are numbers left in the heap:
+        - Remove the biggest value from the heap
+        - Place it in the last open slot of the array
+    - Time complexity: O(NlogN)
+
+## Final Review
+- Converting infix to postfix: 
+    1. Create an empty stack and an empty output string.
+    2. Start scanning the infix expression from left to right.
+    3. If the scanned character is an operand, append it to the output string.
+    4. If the scanned character is an operator, then:
+        - If the stack is empty, push the operator onto the stack.
+        - If the operator has higher precedence than the top of the stack, push the operator onto the stack.
+        - If the operator has equal precedence with the top of the stack, pop the top of the stack and append it to the output string. Then push the incoming operator onto the stack.
+        - If the operator has lower precedence than the top of the stack, pop the top of the stack and append it to the output string. Then repeat step 4 with the incoming operator.
+    5. If the scanned character is an opening parenthesis '(', push it onto the stack.
+    6. If the scanned character is a closing parenthesis ')', then:
+        - Pop operators from the stack and append them to the output string until an opening parenthesis '(' is encountered.
+        - Pop and discard the opening parenthesis '('.
+    7. Repeat steps 3 to 6 until all characters are scanned.
+    8. Pop any remaining operators from the stack and append them to the output string.
+    9. The output string is the postfix expression.
+- Converting postfix to infix:
+    1. Start reading the postfix expression from left to right.
+    2. Initialize an empty stack to store the intermediate results.
+    3. For each character in the postfix expression:
+        - If the character is an operand (a number or variable), push it onto the stack.
+        - If the character is an operator (+, -, *, /, etc.), pop the top two operands from the stack.
+        - Construct an infix expression by placing the operator between the two operands in the order of "operand1 operator operand2".
+        - Push the newly constructed infix expression back onto the stack.
+    4. Repeat steps 3 for all characters in the postfix expression until you reach the end.
+    5. At the end, the stack will contain the final infix expression.
+- Evaluate a prefix expression:
+    1. Start scanning the expression from right to left.
+    2. If the current token is an operand (a number), push it onto the stack.
+    3. If the current token is an operator (+, -, *, /), pop the top two operands from the stack.
+    4. Apply the operator to the two operands.
+    5. Push the result of the operation back onto the stack.
+    6. Repeat steps 2-5 until all tokens in the expression are processed.
+    7. The final result will be the value left on the stack.  
+- Tree traversals:
+    - Preorder: root, left, right
+    - Postorder: left, right, root
+    - Inorder: left, root, right
+- Binary tree balancing: 
+```git
+bool isLeaf(Node* node)
+{
+    return (node->left == nullptr && node->right == nullptr);
+}
+
+int calculateWeight(Node* root)
+{
+    if (root == nullptr)
+        return 0;
+
+    if (isLeaf(root))
+        return root->weight;
+
+    return calculateWeight(root->left) + calculateWeight(root->right);
+}
+
+bool isInBalance(Node* root)
+{
+    if (root == nullptr)
+        return true;
+
+    int leftWeight = calculateWeight(root->left);
+    int rightWeight = calculateWeight(root->right);
+
+    return (leftWeight == rightWeight) && isInBalance(root->left) && isInBalance(root->right);
+}
+```
+- Hash table reallocation:
+```git
+void HashTable::setNumberOfBuckets(unsigned int newNumberOfBuckets)
+{
+    list<string>* newBuckets = new list<string>[newNumberOfBuckets];
+
+    for (unsigned int i = 0; i < m_numberOfBuckets; i++) {
+        for (const string& str : m_buckets[i]) {
+            size_t newBucketIndex = hashFunction(str) % newNumberOfBuckets;
+            newBuckets[newBucketIndex].push_back(str);
+        }
+    }
+
+    delete[] m_buckets;
+
+    m_numberOfBuckets = newNumberOfBuckets;
+    m_buckets = newBuckets;
+}
+```
+- When deleting a node in BST, and the node's children has multiple children (granchildren), choose either the rightmost node of the left branch of the leftmost node of the right branch
+- Time complexity practice:
+    - Note: A pair<T1, T2> is a simple struct with two data members, one of type T1 and one of type T2. A set<K> and a map<K, V> are organized as approximately balanced binary search trees; an unordered_set<K> and an unordered_map<K, V> are organized as hash tables that never allow the load factor to exceed some constant, and a loop that visits every item in a hash table of N items is O(N). For the keys to be hashed, the hash function used produces uniformly distributed results.
+    - Suppose UCLA has C courses each of which has on average S students enrolled. For this problem, courses are represented by strings (e.g. "CS 32"), and students by their int UIDs. We will consider a variety of data structures, and for each determine the big-O time complexity of the appropriate way to use that data structure to determine whether a particular student s is enrolled in course c. For example, if the data structure were vector<pair<string, vector<int>>>, where each pair in the outer vector represents a course and all the students in that course, with those students being sorted in order, then if the pairs are in no particular order in the outer vector, the answer would be O(C + log S). (The reason is that we'd have to do a linear search through the outer vector to find the course, which is O(C), and then after that we could do a binary search of the S students in the sorted vector for that course, which is O(log S).) In these problems, we're just looking for the answer; you don't need to write the reason.
+    - vector<pair<string, list<int>>>, where each pair in the outer vector represents a course and all the students in that class, with those students being sorted in order. The pairs are in no particular order in the outer vector. What is the big-O complexity to determine whether a particular student s is enrolled in course c?
+        - O(C + S). We'd have to do a linear search through the outer vector to find the course, which is O(C), and then after that do a linear search of the S students in the list, which is O(S). We can't do a binary search in a linked list in logarithmic time, because it takes linear time just to get to the middle item of a list, sorted or not.
+    - map<string, list<int>>, where the students in each list are in no particular order. What is the big-O complexity to determine whether a particular student s is enrolled in course c?
+        - O((log C) + S). A BST-based map finds the course in O(log C) time, and after that we do a linear search of the S students in the list.
+    - map<string, set<int>>. What is the big-O complexity to determine whether a particular student s is enrolled in course c?
+        - O(log C + log S). A BST-based map finds the course in O(log C) time, and a BST-based set finds the student in O(log S) time. Notice that a mathematically equivalent way to write this is O(log CS), but that form makes it harder to understand why it's right.
+    - unordered_map<string, set<int>>. What is the big-O complexity to determine whether a particular student s is enrolled in course c?
+        - O(log S). A hash-based map finds the course in O(1) time, and a BST-based set finds the student in O(log S) time. Notice that a constant like 1 is dominated by a function that grows with S, so we write O(log S) instead of O(1 + log S).
+    - unordered_map<string, unordered_set<int>>. What is the big-O complexity to determine whether a particular student s is enrolled in course c?
+        - O(1). A hash-based map finds the course in O(1) time, and a hash-based set finds the student in O(1) time.
+    - Suppose we have the data structure map<string, set<int>> and we wish for a particular course c to write the id numbers of all the students in that course in sorted order. What is the big-O complexity?
+        - O((log C) + S). A BST-based map finds the course in O(log C) time, and we can visit all S items in order in a BST-based set in O(S) time.
+    - Suppose we have the data structure unordered_map<string, unordered_set<int>> and we wish for a particular course c to write the id numbers of all the students in that course in sorted order (perhaps using an additional container to help with that). What is the big-O complexity?
+        - O(S log S). A hash-based map finds the course in O(1) time, and although we can visit all S items in a hash-based set in O(S) time, they'd be in whatever order the hash function caused them to be scattered across the buckets. We have to sort them. It takes O(S) steps to get them into and out of an auxiliary vector, say, and O(S log S) to sort them.
+    - Suppose we have the data structure unordered_map<string, set<int>> and we wish for a particular student s to write all the courses that student is enrolled in, in no particular order. What is the big-O complexity?
+        - O(C log S). The hash-based map is keyed on the course, not the student, so it's not organized to look up students efficiently. Our only choice is to check every course and see in O(log S) time whether the student is in its set of students. Since we have to do the O(log S) operation for each of the C courses, it's O(C log S).
